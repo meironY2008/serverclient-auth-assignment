@@ -1,4 +1,7 @@
 import React from "react";
+import { signIn,setToken,setUser } from "../../actions";
+import { useDispatch } from "react-redux";
+import axios from "axios";
 import classNames from "classnames";
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
@@ -20,6 +23,8 @@ import CustomInput from "components/CustomInput/CustomInput.js";
 import Button from "components/CustomButtons/Button.js";
 
 import styles from "assets/jss/material-dashboard-react/components/headerLinksStyle.js";
+import { useSelector } from "react-redux";
+import { useSnackbar } from 'notistack';
 
 const useStyles = makeStyles(styles);
 
@@ -27,7 +32,13 @@ export default function AdminNavbarLinks() {
   const classes = useStyles();
   const [openNotification, setOpenNotification] = React.useState(null);
   const [openProfile, setOpenProfile] = React.useState(null);
-  const handleClickNotification = event => {
+  const dispach = useDispatch();
+  const token = useSelector((state) => state.tokenReducer);
+  const isLoading = useSelector((state) => state.loadingReducer);
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+
+
+  const handleClickNotification = (event) => {
     if (openNotification && openNotification.contains(event.target)) {
       setOpenNotification(null);
     } else {
@@ -37,12 +48,37 @@ export default function AdminNavbarLinks() {
   const handleCloseNotification = () => {
     setOpenNotification(null);
   };
-  const handleClickProfile = event => {
+  const handleClickProfile = (event) => {
     if (openProfile && openProfile.contains(event.target)) {
       setOpenProfile(null);
     } else {
       setOpenProfile(event.currentTarget);
     }
+  };
+  const handleClickLogOut = () => {
+        fetch("/logout",{
+      method:'DELETE',
+      headers: {
+        'Content-Type':'application/json',
+      },
+      body: JSON.stringify(token)
+      })
+    .then(function (response) {
+      dispach(setToken());
+      dispach(setUser());
+      dispach(signIn());
+      enqueueSnackbar('logOut success', {
+        variant: "success",
+        autoHideDuration: 3000,
+      });
+    })
+    .catch(function (error) {
+      enqueueSnackbar('logOut faild', {
+        variant: "error",
+        autoHideDuration: 3000,
+      });
+    });
+    
   };
   const handleCloseProfile = () => {
     setOpenProfile(null);
@@ -52,13 +88,13 @@ export default function AdminNavbarLinks() {
       <div className={classes.searchWrapper}>
         <CustomInput
           formControlProps={{
-            className: classes.margin + " " + classes.search
+            className: classes.margin + " " + classes.search,
           }}
           inputProps={{
             placeholder: "Search",
             inputProps: {
-              "aria-label": "Search"
-            }
+              "aria-label": "Search",
+            },
           }}
         />
         <Button color="white" aria-label="edit" justIcon round>
@@ -112,7 +148,7 @@ export default function AdminNavbarLinks() {
               id="notification-menu-list-grow"
               style={{
                 transformOrigin:
-                  placement === "bottom" ? "center top" : "center bottom"
+                  placement === "bottom" ? "center top" : "center bottom",
               }}
             >
               <Paper>
@@ -187,7 +223,7 @@ export default function AdminNavbarLinks() {
               id="profile-menu-list-grow"
               style={{
                 transformOrigin:
-                  placement === "bottom" ? "center top" : "center bottom"
+                  placement === "bottom" ? "center top" : "center bottom",
               }}
             >
               <Paper>
@@ -207,7 +243,7 @@ export default function AdminNavbarLinks() {
                     </MenuItem>
                     <Divider light />
                     <MenuItem
-                      onClick={handleCloseProfile}
+                      onClick={handleClickLogOut}
                       className={classes.dropdownItem}
                     >
                       Logout
