@@ -1,4 +1,7 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
+import { setUser, loading } from "../../actions";
+import { useDispatch, useSelector } from "react-redux";
+import { useSnackbar } from "notistack";
 // @material-ui/core components
 import { makeStyles } from "@material-ui/core/styles";
 import InputLabel from "@material-ui/core/InputLabel";
@@ -12,7 +15,7 @@ import CardHeader from "components/Card/CardHeader.js";
 import CardAvatar from "components/Card/CardAvatar.js";
 import CardBody from "components/Card/CardBody.js";
 import CardFooter from "components/Card/CardFooter.js";
-
+import Loader from "components/Loader/Loader";
 import avatar from "assets/img/faces/marc.jpg";
 
 const styles = {
@@ -21,7 +24,7 @@ const styles = {
     margin: "0",
     fontSize: "14px",
     marginTop: "0",
-    marginBottom: "0"
+    marginBottom: "0",
   },
   cardTitleWhite: {
     color: "#FFFFFF",
@@ -30,15 +33,78 @@ const styles = {
     fontWeight: "300",
     fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif",
     marginBottom: "3px",
-    textDecoration: "none"
-  }
+    textDecoration: "none",
+  },
 };
 
 const useStyles = makeStyles(styles);
 
 export default function UserProfile() {
   const classes = useStyles();
-  return (
+
+  const emailRef = useRef();
+  const countryRef = useRef();
+  const usernameRef = useRef();
+  const firstNameRef = useRef();
+  const lastNameRef = useRef();
+  const cityRef = useRef();
+  const postRef = useRef();
+  const aboutRef = useRef();
+
+  const dispach = useDispatch();
+  const user = useSelector((state) => state.userReducer);
+  const token = useSelector((state) => state.accessTokenReducer);
+  const isLoading = useSelector((state) => state.loadingReducer);
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+
+  const handleUpdateProfile = (e) => {
+    e.preventDefault();
+    const requestOptions = {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        authorization: `Bearer ${token.access_token}`,
+      },
+      body: JSON.stringify({
+        email: user.user.email,
+        company: user.user.company,
+        firstName: firstNameRef.current.value
+          ? firstNameRef.current.value
+          : user.user.firstName,
+        lastName: lastNameRef.current.value
+          ? lastNameRef.current.value
+          : user.user.lastName,
+        city: cityRef.current.value ? cityRef.current.value : user.user.city,
+        country: countryRef.current.value
+          ? countryRef.current.value
+          : user.user.country,
+        username: usernameRef.current.value
+          ? usernameRef.current.value
+          : user.user.username,
+        post: postRef.current.value ? postRef.current.value : user.user.post,
+        about: aboutRef.current.value
+          ? aboutRef.current.value
+          : user.user.about,
+      }),
+    };
+    dispach(loading());
+    fetch("/update", requestOptions)
+      .then((response) => {
+        return response.json();
+      })
+      .then((response) => {
+        dispach(loading());
+        enqueueSnackbar("success");
+        dispach(setUser(response.user));
+      })
+      .catch(function(error) {
+        dispach(loading());
+        enqueueSnackbar("faild to update");
+      });
+  };
+  return isLoading ? (
+    <Loader />
+  ) : (
     <div>
       <GridContainer>
         <GridItem xs={12} sm={12} md={8}>
@@ -54,10 +120,10 @@ export default function UserProfile() {
                     labelText="Company (disabled)"
                     id="company-disabled"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                     inputProps={{
-                      disabled: true
+                      disabled: true,
                     }}
                   />
                 </GridItem>
@@ -66,8 +132,9 @@ export default function UserProfile() {
                     labelText="Username"
                     id="username"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
+                    inputRef={usernameRef}
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={4}>
@@ -75,8 +142,9 @@ export default function UserProfile() {
                     labelText="Email address"
                     id="email-address"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
+                    inputRef={emailRef}
                   />
                 </GridItem>
               </GridContainer>
@@ -86,8 +154,9 @@ export default function UserProfile() {
                     labelText="First Name"
                     id="first-name"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
+                    inputRef={firstNameRef}
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={6}>
@@ -95,8 +164,9 @@ export default function UserProfile() {
                     labelText="Last Name"
                     id="last-name"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
+                    inputRef={lastNameRef}
                   />
                 </GridItem>
               </GridContainer>
@@ -106,8 +176,9 @@ export default function UserProfile() {
                     labelText="City"
                     id="city"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
+                    inputRef={cityRef}
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={4}>
@@ -115,8 +186,9 @@ export default function UserProfile() {
                     labelText="Country"
                     id="country"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
+                    inputRef={countryRef}
                   />
                 </GridItem>
                 <GridItem xs={12} sm={12} md={4}>
@@ -124,8 +196,9 @@ export default function UserProfile() {
                     labelText="Postal Code"
                     id="postal-code"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
+                    inputRef={postRef}
                   />
                 </GridItem>
               </GridContainer>
@@ -136,25 +209,28 @@ export default function UserProfile() {
                     labelText="Lamborghini Mercy, Your chick she so thirsty, I'm in that two seat Lambo."
                     id="about-me"
                     formControlProps={{
-                      fullWidth: true
+                      fullWidth: true,
                     }}
                     inputProps={{
                       multiline: true,
-                      rows: 5
+                      rows: 5,
                     }}
+                    inputRef={aboutRef}
                   />
                 </GridItem>
               </GridContainer>
             </CardBody>
             <CardFooter>
-              <Button color="primary">Update Profile</Button>
+              <Button onClick={handleUpdateProfile} color="primary">
+                Update Profile
+              </Button>
             </CardFooter>
           </Card>
         </GridItem>
         <GridItem xs={12} sm={12} md={4}>
           <Card profile>
             <CardAvatar profile>
-              <a href="#pablo" onClick={e => e.preventDefault()}>
+              <a href="#pablo" onClick={(e) => e.preventDefault()}>
                 <img src={avatar} alt="..." />
               </a>
             </CardAvatar>
