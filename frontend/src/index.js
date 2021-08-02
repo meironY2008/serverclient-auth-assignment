@@ -17,24 +17,25 @@
 */
 import React from "react";
 import ReactDOM from "react-dom";
-import { createBrowserHistory } from "history";
-import { Router, Route, Switch, Redirect } from "react-router-dom";
+import { SnackbarProvider } from "notistack";
+import { createStore } from "redux";
+import { Provider } from "react-redux";
+import allReducer from "./reducer/index";
 
 // core components
-import Admin from "layouts/Admin.js";
-import RTL from "layouts/RTL.js";
-
+import App from "./layouts/App";
 import "assets/css/material-dashboard-react.css?v=1.8.0";
 
-const hist = createBrowserHistory();
+const store = createStore(
+  allReducer,
+  window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
+);
 
 ReactDOM.render(
-  <Router history={hist}>
-    <Switch>
-      <Route path="/admin" component={Admin} />
-      <Route path="/rtl" component={RTL} />
-      <Redirect from="/" to="/admin/dashboard" />
-    </Switch>
-  </Router>,
+  <Provider store={store}>
+    <SnackbarProvider maxSnack={3}>
+      <App />
+    </SnackbarProvider>
+  </Provider>,
   document.getElementById("root")
 );
