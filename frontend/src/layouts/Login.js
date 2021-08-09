@@ -85,12 +85,21 @@ function Login() {
   const handleSignIn = (e) => {
     e.preventDefault();
     dispach(loading());
-    console.log(emailRef.current.value, passwordRef.current.value);
+    // console.log(emailRef.current.value, passwordRef.current.value);
     axios
-      .post("/login", {
-        email: emailRef.current.value,
-        password: passwordRef.current.value,
-      })
+      .post(
+        "http://localhost:8080/login",
+        {
+          email: emailRef.current.value,
+          password: passwordRef.current.value,
+        },
+        {
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Content-Type": "application/json",
+          },
+        }
+      )
       .then(function(response) {
         dispach(loading());
         enqueueSnackbar("success", {

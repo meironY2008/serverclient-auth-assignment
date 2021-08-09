@@ -114,7 +114,7 @@ function Register() {
       return;
     dispach(loading());
     axios
-      .post("/register", {
+      .post("http://localhost:8080/register", {
         email: emailRef.current.value,
         password: passwordRef.current.value,
         company: countryRef.current.value,

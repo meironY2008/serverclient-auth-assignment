@@ -88,7 +88,7 @@ export default function UserProfile() {
       }),
     };
     dispach(loading());
-    fetch("/update", requestOptions)
+    fetch("http://localhost:8080/update", requestOptions)
       .then((response) => {
         return response.json();
       })

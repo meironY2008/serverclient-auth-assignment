@@ -56,7 +56,7 @@ export default function AdminNavbarLinks() {
     }
   };
   const handleClickLogOut = () => {
-        fetch("/logout",{
+        fetch("http://localhost:8080/logout",{
       method:'DELETE',
       headers: {
         'Content-Type':'application/json',
